@@ -46,11 +46,11 @@ service cloud.firestore {
     match /curriculum/{planId} {
       allow read: if true; // Publicly readable for students
       
-      allow create: if isOwner('poojaaro@gmail.com') &&
+      allow create: if isSignedIn() &&
                       isValidId(planId) &&
                       isValidTimeline(incoming());
                       
-      allow update: if isOwner('poojaaro@gmail.com') &&
+      allow update: if isSignedIn() &&
                       isValidTimeline(incoming()) &&
                       incoming().diff(existing()).affectedKeys().hasOnly(['items', 'lastUpdated', 'updatedBy']);
                       
