@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(email) {
+      return isSignedIn() && request.auth.token.email == email && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 64 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Helpers ---
+    function isValidMonthPlan(plan) {
+      return plan is map &&
+             plan.month is string && plan.month.size() > 0 && plan.month.size() <= 20 &&
+             plan.topic is string && plan.topic.size() <= 100 &&
+             plan.details is list && plan.details.size() <= 20 &&
+             plan.type in ['Topic A', 'Topic B', 'IA', 'Exam', 'Case Study', 'Topic B4', 'Topic Assessment'];
+    }
+
+    function isValidTimeline(data) {
+      return data.items is list &&
+             data.items.size() <= 24 &&
+             (data.items.size() == 0 || isValidMonthPlan(data.items[0])); // Basic type check for first item
+    }
+
+    // --- Rules ---
+    match /curriculum/{planId} {
+      allow read: if true; // Publicly readable for students
+      
+      allow create: if isOwner('poojaaro@gmail.com') &&
+                      isValidId(planId) &&
+                      isValidTimeline(incoming());
+                      
+      allow update: if isOwner('poojaaro@gmail.com') &&
+                      isValidTimeline(incoming()) &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['items', 'lastUpdated', 'updatedBy']);
+                      
+      allow delete: if false; // Prevention of accidental wipes
+    }
+
+    match /test/connection {
+       allow get: if true;
+    }
+  }
+}

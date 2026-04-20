@@ -1,0 +1,34 @@
+{
+  "entities": {
+    "MonthPlan": {
+      "title": "MonthPlan",
+      "description": "A single month's curriculum plan",
+      "type": "object",
+      "properties": {
+        "month": { "type": "string" },
+        "topic": { "type": "string" },
+        "details": { "type": "array", "items": { "type": "string" } },
+        "type": { "type": "string", "enum": ["Topic A", "Topic B", "IA", "Exam", "Case Study", "Topic B4", "Topic Assessment"] },
+        "isMilestone": { "type": "boolean" }
+      },
+      "required": ["month", "topic", "details", "type"]
+    },
+    "TimelinePlan": {
+      "title": "TimelinePlan",
+      "description": "A complete 2-year sequence",
+      "type": "object",
+      "properties": {
+        "items": { "type": "array", "items": { "$ref": "#/entities/MonthPlan" } },
+        "lastUpdated": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["items"]
+    }
+  },
+  "firestore": {
+    "/curriculum/{planId}": {
+      "schema": "TimelinePlan",
+      "description": "Shared curriculum plans for DP1/DP2 SL/HL"
+    }
+  }
+}
