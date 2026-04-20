@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { db, auth } from '../firebase';
 import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
-import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, User, signInAnonymously } from 'firebase/auth';
 
 interface MonthPlan {
   month: string;
@@ -123,12 +123,23 @@ const TimelineSection: React.FC = () => {
   const safeMonthIdx = Math.min(selectedMonth, currentPlan.length - 1);
   const currentItem = currentPlan[safeMonthIdx];
 
-  const handleAuthSubmit = (e: React.FormEvent) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === 'Arora2027') {
+    const ownerPassword = import.meta.env.VITE_OWNER_PASSWORD || 'Arora2027';
+    if (passwordInput === ownerPassword) {
       setIsOwner(true);
       setIsEditing(true);
       sessionStorage.setItem('ibdp_owner_authenticated', 'true');
+      
+      // Silently sign in anonymously to allow Firebase Cloud writes via rules
+      if (!currentUser) {
+        try {
+          await signInAnonymously(auth);
+        } catch (err) {
+          console.error("Anonymous auth failed", err);
+        }
+      }
+      
       setShowAuthModal(false);
       setPasswordInput('');
       setAuthError(false);
@@ -150,17 +161,18 @@ const TimelineSection: React.FC = () => {
   };
 
   const saveToFirestore = async (items: MonthPlan[]) => {
-    if (!isActuallyAdmin) return;
+    // Check if the user is authenticated (either via Google or Anonymous passcode)
+    if (!auth.currentUser) return;
+    
     const planId = `${activeYear.toLowerCase()}_${activeTrack.toLowerCase()}`;
     try {
       await setDoc(doc(db, 'curriculum', planId), {
         items,
         lastUpdated: serverTimestamp(),
-        updatedBy: currentUser?.email
+        updatedBy: currentUser?.email || 'Anonymous Owner'
       });
     } catch (error) {
       console.error("Failed to save to Firestore", error);
-      alert("Permission denied or connection error. Please sign in as Admin.");
     }
   };
 
@@ -170,12 +182,13 @@ const TimelineSection: React.FC = () => {
     newPlan[safeMonthIdx] = { ...newPlan[safeMonthIdx], ...updates };
     setPlan(newPlan);
     
-    if (isActuallyAdmin) {
+    // Always attempt cloud sync if authenticated (via passcode or Google)
+    if (auth.currentUser) {
       saveToFirestore(newPlan);
-    } else {
-      // Local fallback if not logged in as admin
-      localStorage.setItem(`ibdp_cs_${activeYear.toLowerCase()}_${activeTrack === 'SL' ? '' : 'hl_'}plan`, JSON.stringify(newPlan));
     }
+    
+    // Also update local storage for redundancy
+    localStorage.setItem(`ibdp_cs_${activeYear.toLowerCase()}_${activeTrack === 'SL' ? '' : 'hl_'}plan`, JSON.stringify(newPlan));
   };
 
   const handleAddDetail = () => {
