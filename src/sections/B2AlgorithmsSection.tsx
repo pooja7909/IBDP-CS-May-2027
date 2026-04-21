@@ -273,7 +273,7 @@ const B2AlgorithmsSection: React.FC = () => {
       <div className="text-center relative py-12">
         <div className="tape"></div>
         <h1 className="text-6xl font-black handwritten text-slate-900 mb-4 tracking-tight">B2.4 Algorithm Laboratory</h1>
-        <p className="text-2xl kalam text-slate-600 italic">"The Logic of Searching, Sorting & Big O"</p>
+        <p className="text-2xl font-bold text-slate-600 italic">"The Logic of Searching, Sorting & Big O"</p>
       </div>
 
       <div className="flex flex-wrap justify-center gap-3">
@@ -359,7 +359,7 @@ const B2AlgorithmsSection: React.FC = () => {
             <HandwrittenCard title="Wait, How does it work?" bgColor="bg-yellow-50" className="border-yellow-200">
                <ul className="space-y-3">
                  {activeAlgoData.steps.map((s: string, i: number) => (
-                   <li key={i} className="flex items-start text-xs font-bold kalam text-slate-700">
+                   <li key={i} className="flex items-start text-xs font-bold text-slate-700">
                      <span className="w-5 h-5 bg-white border border-yellow-300 rounded flex items-center justify-center mr-3 mt-0.5 shrink-0 text-[10px]">{i+1}</span>
                      <span>{s}</span>
                    </li>
@@ -370,7 +370,7 @@ const B2AlgorithmsSection: React.FC = () => {
             <div className="p-8 bg-indigo-900 text-white rounded-[2.5rem] sketch-border shadow-xl flex flex-col justify-center relative overflow-hidden">
                <div className="absolute top-0 right-0 p-8 opacity-10 -rotate-12"><Zap size={100}/></div>
                <h4 className="text-xl font-black handwritten text-indigo-200 mb-4 flex items-center"><Target className="mr-2" size={20}/> Paper 2 Strategy</h4>
-               <p className="text-sm kalam italic text-indigo-100 leading-relaxed">
+               <p className="text-sm italic text-indigo-100 leading-relaxed font-medium">
                  "{activeAlgoData.examTip}"
                </p>
             </div>
@@ -430,7 +430,7 @@ const B2AlgorithmsSection: React.FC = () => {
 
         <div className="grid lg:grid-cols-2 gap-10">
           <HandwrittenCard title="Visualizing Orders of Growth" bgColor="bg-white" className="border-4 border-slate-900">
-             <p className="kalam text-lg font-bold text-slate-700 mb-6 italic">"Big O notation describes how the time taken grows as the input size (N) increases. Some code stays fast, some explodes!"</p>
+             <p className="text-lg font-bold text-slate-700 mb-6 italic">"Big O notation describes how the time taken grows as the input size (N) increases. Some code stays fast, some explodes!"</p>
              
              <div className="relative h-64 bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 overflow-hidden mb-6 flex items-end">
                 {/* Vertical Axis */}
@@ -477,7 +477,7 @@ const B2AlgorithmsSection: React.FC = () => {
 
           <div className="space-y-6">
             <HandwrittenCard title="The Growth Reality Check" bgColor="bg-slate-900" className="text-white border-4 border-slate-700">
-               <p className="text-xs kalam italic text-slate-400 mb-6 leading-relaxed">"Look what happens to the number of operations as N scales up. This is why Binary Search beats Linear Search for large data!"</p>
+               <p className="text-xs italic text-slate-400 mb-6 leading-relaxed">"Look what happens to the number of operations as N scales up. This is why Binary Search beats Linear Search for large data!"</p>
                
                <div className="overflow-hidden rounded-xl border border-slate-700">
                   <table className="w-full text-left font-mono text-[10px]">
@@ -503,7 +503,7 @@ const B2AlgorithmsSection: React.FC = () => {
                   <div className="p-2 bg-yellow-400 rounded-lg shrink-0"><ShieldAlert size={20} className="text-slate-900"/></div>
                   <div>
                     <h5 className="font-black text-xs text-yellow-400 uppercase mb-2">Teacher's Calculation Rules</h5>
-                    <ul className="text-[10px] kalam text-slate-400 leading-relaxed italic space-y-1">
+                    <ul className="text-[10px] text-slate-400 leading-relaxed italic space-y-1 font-medium">
                       <li>1. Ignore constants: O(2N + 5) simplifies to <b>O(N)</b>.</li>
                       <li>2. Ignore lower-order terms: O(N² + N) becomes <b>O(N²)</b>.</li>
                       <li>3. Focus on the <b>Dominant Term</b> that grows fastest.</li>
@@ -693,7 +693,7 @@ const EfficiencyBox = ({ type, label, color, bg, desc }: any) => (
   <div className={`${bg} p-4 rounded-2xl border border-slate-100 flex flex-col group hover:shadow-md transition-all`}>
     <span className={`text-lg font-black font-mono ${color}`}>{type}</span>
     <span className="text-[9px] font-black uppercase text-slate-500 mb-2">{label}</span>
-    <p className="text-[10px] kalam font-bold text-slate-600 leading-tight italic">{desc}</p>
+    <p className="text-[10px] font-bold text-slate-600 leading-tight italic">{desc}</p>
   </div>
 );
 
