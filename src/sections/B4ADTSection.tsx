@@ -30,7 +30,7 @@ const B4ADTSection: React.FC = () => {
            <ShieldAlert size={16} /> <span>HL Mastery Core (B4)</span>
         </div>
         <h1 className="text-6xl font-black handwritten text-slate-900 mb-4 tracking-tight text-balance">Abstract Data Architect</h1>
-        <p className="text-2xl kalam text-slate-600 italic max-w-2xl mx-auto">"Evaluating and constructing complex information hierarchies."</p>
+        <p className="text-2xl font-bold text-slate-600 italic max-w-2xl mx-auto">"Evaluating and constructing complex information hierarchies."</p>
       </div>
 
       {/* Navigation */}
@@ -68,18 +68,18 @@ const FundamentalsModule = () => (
       <div className="lg:col-span-7 space-y-8">
         <HandwrittenCard title="Logical vs Physical Reality" bgColor="bg-white" className="border-4 border-purple-900 shadow-xl overflow-hidden">
            <div className="absolute top-2 right-4 opacity-5 rotate-12"><Cpu size={120} /></div>
-           <p className="kalam text-lg font-bold text-slate-700 leading-relaxed mb-6">
+           <p className="text-lg font-bold text-slate-700 leading-relaxed mb-6 font-medium">
              "An ADT is the <b>logical contract</b>. It describes <u>what</u> data we have and <u>what</u> we can do with it, completely ignoring <u>how</u> it actually fits in memory."
            </p>
            
            <div className="grid md:grid-cols-2 gap-6 mb-8">
               <div className="p-5 bg-indigo-50 border-2 border-indigo-200 rounded-2xl">
                  <h5 className="font-black text-xs text-indigo-900 uppercase mb-2 flex items-center"><Eye size={14} className="mr-1"/> Logical Layer</h5>
-                 <p className="text-[11px] kalam font-bold text-slate-600 leading-tight">Focuses on user needs. Operations like <code>enqueue()</code> or <code>peek()</code>. The developer's mental model.</p>
+                 <p className="text-[11px] font-bold text-slate-600 leading-tight">Focuses on user needs. Operations like <code>enqueue()</code> or <code>peek()</code>. The developer's mental model.</p>
               </div>
               <div className="p-5 bg-emerald-50 border-2 border-emerald-200 rounded-2xl">
                  <h5 className="font-black text-xs text-emerald-900 uppercase mb-2 flex items-center"><Database size={14} className="mr-1"/> Physical Layer</h5>
-                 <p className="text-[11px] kalam font-bold text-slate-600 leading-tight">Focuses on machine needs. Pointers, memory addresses, and actual storage in Arrays or Nodes.</p>
+                 <p className="text-[11px] font-bold text-slate-600 leading-tight">Focuses on machine needs. Pointers, memory addresses, and actual storage in Arrays or Nodes.</p>
               </div>
            </div>
 
@@ -91,7 +91,7 @@ const FundamentalsModule = () => (
                     <span className="text-[8px] font-black uppercase text-slate-500">The TV Remote</span>
                  </div>
                  <ArrowRight className="text-slate-700" />
-                 <p className="text-[11px] kalam text-slate-300 italic flex-1">
+                 <p className="text-[11px] text-slate-300 italic flex-1 font-medium">
                     "You press 'Channel Up' (the ADT method). You don't care about the radio frequencies or infrared signals (the implementation). <br/><br/>
                     <b>Abstraction</b> hides the messy electronics so you can focus on watching the game!"
                  </p>
