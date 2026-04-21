@@ -11,6 +11,23 @@ import {
 import { db, auth } from '../firebase';
 import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, User, signInAnonymously } from 'firebase/auth';
+import {
+  DndContext, 
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface MonthPlan {
   month: string;
@@ -192,7 +209,7 @@ const TimelineSection: React.FC = () => {
   };
 
   const handleAddDetail = () => {
-    const newDetails = [...currentItem.details, 'New sub-topic...'];
+    const newDetails = [...currentItem.details, ''];
     updateCurrentItem({ details: newDetails });
   };
 
@@ -237,6 +254,27 @@ const TimelineSection: React.FC = () => {
       default: return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = parseInt(active.id as string);
+      const newIndex = parseInt(over.id as string);
+      const newDetails = arrayMove(currentItem.details, oldIndex, newIndex);
+      updateCurrentItem({ details: newDetails });
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 relative">
@@ -399,21 +437,32 @@ const TimelineSection: React.FC = () => {
                 </div>
                 
                 <ul className="space-y-3">
-                  {currentItem.details.map((detail, dIdx) => {
-                    const isSubAssess = detail.toLowerCase().includes('assessment');
-                    return (
-                      <li key={dIdx} className={`group flex items-start text-sm kalam font-bold transition-all p-1 rounded-lg ${isSubAssess ? 'bg-orange-50 text-orange-900' : 'text-slate-700'}`}>
-                        <div className={`w-5 h-5 rounded flex items-center justify-center mr-3 mt-0.5 shrink-0 border ${isSubAssess ? 'bg-orange-500 border-orange-600 text-white' : 'bg-slate-100 border-slate-200'}`}>
-                          <span className="text-[8px]">{dIdx + 1}</span>
-                        </div>
-                        {isEditing ? (
-                          <div className="flex-1 flex items-center space-x-2"><input type="text" value={detail} onChange={(e) => handleUpdateDetail(dIdx, e.target.value)} className="flex-1 bg-transparent border-b border-slate-200 p-1 focus:outline-none focus:border-slate-900"/><button onClick={() => handleRemoveDetail(dIdx)} className="text-slate-300 hover:text-red-500 transition-colors"><Trash2 size={14}/></button></div>
-                        ) : (
-                          <span className="flex-1">{detail} {isSubAssess && '🔥'}</span>
-                        )}
-                      </li>
-                    );
-                  })}
+                  <DndContext 
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext 
+                      items={currentItem.details.map((_, i) => i.toString())}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {currentItem.details.map((detail, dIdx) => {
+                        const isSubAssess = detail.toLowerCase().includes('assessment');
+                        return (
+                          <SortableItem 
+                            key={dIdx}
+                            id={dIdx.toString()}
+                            detail={detail}
+                            index={dIdx}
+                            isEditing={isEditing}
+                            isSubAssess={isSubAssess}
+                            handleUpdateDetail={handleUpdateDetail}
+                            handleRemoveDetail={handleRemoveDetail}
+                          />
+                        );
+                      })}
+                    </SortableContext>
+                  </DndContext>
                 </ul>
               </div>
 
@@ -484,5 +533,74 @@ const Trophy = ({size, className}: {size: number, className: string}) => (
     <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
   </svg>
 );
+
+interface SortableItemProps {
+  id: string;
+  detail: string;
+  index: number;
+  isEditing: boolean;
+  isSubAssess: boolean;
+  handleUpdateDetail: (index: number, val: string) => void;
+  handleRemoveDetail: (index: number) => void;
+}
+
+const SortableItem: React.FC<SortableItemProps> = ({ 
+  id, detail, index, isEditing, isSubAssess, handleUpdateDetail, handleRemoveDetail 
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 1,
+    position: 'relative' as any
+  };
+
+  return (
+    <li 
+      ref={setNodeRef} 
+      style={style} 
+      className={`group flex items-start text-sm kalam font-bold transition-all p-1 rounded-lg ${
+        isSubAssess ? 'bg-orange-50 text-orange-900 border border-orange-100/50' : 'text-slate-700'
+      } ${isDragging ? 'z-50 opacity-50 scale-105 shadow-xl bg-indigo-50 border-indigo-200' : 'border-transparent'}`}
+    >
+      <div 
+        {...attributes} 
+        {...listeners}
+        className={`w-5 h-5 rounded flex items-center justify-center mr-3 mt-0.5 shrink-0 border ${
+          isEditing ? 'cursor-grab active:cursor-grabbing hover:bg-slate-200' : ''
+        } ${isSubAssess ? 'bg-orange-500 border-orange-600 text-white' : 'bg-slate-100 border-slate-200'}`}
+      >
+        <span className="text-[8px]">{index + 1}</span>
+      </div>
+      {isEditing ? (
+        <div className="flex-1 flex items-center space-x-2">
+          <input 
+            type="text" 
+            value={detail} 
+            onChange={(e) => handleUpdateDetail(index, e.target.value)} 
+            className="flex-1 bg-transparent border-b border-slate-200 p-1 focus:outline-none focus:border-slate-900"
+            placeholder="Enter sub-topic..."
+          />
+          <button 
+            onClick={() => handleRemoveDetail(index)} 
+            className="text-slate-300 hover:text-red-500 transition-colors"
+          >
+            <Trash2 size={14}/>
+          </button>
+        </div>
+      ) : (
+        <span className="flex-1">{detail} {isSubAssess && '🔥'}</span>
+      )}
+    </li>
+  );
+};
 
 export default TimelineSection;
