@@ -117,7 +117,7 @@ const App: React.FC = () => {
           {renderSection()}
           
           <footer className="mt-20 pt-8 border-t border-slate-200 text-center pb-12">
-            <p className="kalam text-slate-400 text-sm">
+            <p className="text-slate-400 text-sm font-medium">
               © 2025 <span className="font-bold text-slate-600">Pooja Arora</span> - Computing Teacher
             </p>
             <p className="text-[10px] font-mono text-slate-300 mt-1 uppercase tracking-widest">
