@@ -29,15 +29,37 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+interface DetailItem {
+  id: string;
+  text: string;
+}
+
 interface MonthPlan {
   month: string;
   topic: string;
-  details: string[];
+  details: (string | DetailItem)[];
   type: 'Topic A' | 'Topic B' | 'IA' | 'Exam' | 'Case Study' | 'Topic B4' | 'Topic Assessment';
   isMilestone?: boolean;
 }
 
-const DEFAULT_DP1_PLAN: MonthPlan[] = [
+// Utility to ensure details are always in {id, text} format for stable DND
+const normalizeDetails = (details: (string | DetailItem)[]): DetailItem[] => {
+  return details.map((d, index) => {
+    if (typeof d === 'string') {
+      return { id: `item-${index}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, text: d };
+    }
+    return d;
+  });
+};
+
+const normalizePlan = (plan: MonthPlan[]): MonthPlan[] => {
+  return plan.map(p => ({
+    ...p,
+    details: normalizeDetails(p.details)
+  }));
+};
+
+const DEFAULT_DP1_PLAN: MonthPlan[] = normalizePlan([
   { month: 'August', topic: 'Course Launch & B1', type: 'Topic B', details: ['Introduction to CS', 'B1.1 Approaches to Computational Thinking'] },
   { month: 'September', topic: 'Programming B2', type: 'Topic B', details: ['Python/Java Fundamentals', 'Variables, Control Flow', 'Basic Data Structures'] },
   { month: 'October', topic: 'Algorithms B2', type: 'Topic B', details: ['Search & Sort Algorithms', 'Big O Notation', 'Trace Tables', 'Topic Assessment - programming in python'] },
@@ -49,9 +71,9 @@ const DEFAULT_DP1_PLAN: MonthPlan[] = [
   { month: 'April', topic: 'IA Start & Review', type: 'IA', details: ['Criterion A: Problem Specification', 'Drafting success criteria'] },
   { month: 'May', topic: 'EOY Exams', type: 'Exam', isMilestone: true, details: ['Paper 1 & 2 Foundations', 'IA Criterion B Planning'] },
   { month: 'June', topic: 'IA Progress & Case Study', type: 'Case Study', isMilestone: true, details: ['CASE STUDY RELEASED!', 'Criterion B Submission'] },
-];
+]);
 
-const DEFAULT_DP2_PLAN: MonthPlan[] = [
+const DEFAULT_DP2_PLAN: MonthPlan[] = normalizePlan([
   { month: 'August', topic: 'Networks A2 & IA Dev', type: 'Topic A', details: ['A2.1-2 Network Fundamentals', 'IA Criterion D: Development'] },
   { month: 'September', topic: 'Network Security A2', type: 'Topic A', details: ['A2.3-4 Security Protocols', 'Encryption Basics'] },
   { month: 'October', topic: 'IA Development Cont.', type: 'IA', details: ['Coding the Product', 'Drafting Testing Strategy'] },
@@ -60,7 +82,7 @@ const DEFAULT_DP2_PLAN: MonthPlan[] = [
   { month: 'January', topic: 'Mock Exams', type: 'Exam', isMilestone: true, details: ['Full Past Paper Simulation', 'Case Study Deep Dive 1'] },
   { month: 'February', topic: 'Case Study & Review', type: 'Case Study', details: ['Detailed research on pre-seen', 'Linking questions practice'] },
   { month: 'March', topic: 'Final Sprint', type: 'Exam', isMilestone: true, details: ['Exam Paper Mastery', 'Revision of Topic A & B'] },
-];
+]);
 
 // Start exactly the same
 const DEFAULT_DP1_HL_PLAN: MonthPlan[] = [...DEFAULT_DP1_PLAN];
@@ -85,16 +107,16 @@ const TimelineSection: React.FC = () => {
   // Sync with Firestore
   useEffect(() => {
     const unsubDP1SL = onSnapshot(doc(db, 'curriculum', 'dp1_sl'), (snap) => {
-      if (snap.exists()) setDp1Plan(snap.data().items);
+      if (snap.exists()) setDp1Plan(normalizePlan(snap.data().items));
     });
     const unsubDP2SL = onSnapshot(doc(db, 'curriculum', 'dp2_sl'), (snap) => {
-      if (snap.exists()) setDp2Plan(snap.data().items);
+      if (snap.exists()) setDp2Plan(normalizePlan(snap.data().items));
     });
     const unsubDP1HL = onSnapshot(doc(db, 'curriculum', 'dp1_hl'), (snap) => {
-      if (snap.exists()) setDp1HlPlan(snap.data().items);
+      if (snap.exists()) setDp1HlPlan(normalizePlan(snap.data().items));
     });
     const unsubDP2HL = onSnapshot(doc(db, 'curriculum', 'dp2_hl'), (snap) => {
-      if (snap.exists()) setDp2HlPlan(snap.data().items);
+      if (snap.exists()) setDp2HlPlan(normalizePlan(snap.data().items));
     });
 
     const unsubAuth = onAuthStateChanged(auth, (user) => {
@@ -209,18 +231,18 @@ const TimelineSection: React.FC = () => {
   };
 
   const handleAddDetail = () => {
-    const newDetails = [...currentItem.details, ''];
+    const newDetails = [...(currentItem.details as DetailItem[]), { id: `item-${Date.now()}-${Math.random()}`, text: '' }];
     updateCurrentItem({ details: newDetails });
   };
 
   const handleRemoveDetail = (index: number) => {
-    const newDetails = currentItem.details.filter((_, i) => i !== index);
+    const newDetails = (currentItem.details as DetailItem[]).filter((_, i) => i !== index);
     updateCurrentItem({ details: newDetails });
   };
 
   const handleUpdateDetail = (index: number, val: string) => {
-    const newDetails = [...currentItem.details];
-    newDetails[index] = val;
+    const newDetails = [...(currentItem.details as DetailItem[])];
+    newDetails[index] = { ...newDetails[index], text: val };
     updateCurrentItem({ details: newDetails });
   };
 
@@ -240,7 +262,10 @@ const TimelineSection: React.FC = () => {
 
   const isAssessmentMonth = (plan: MonthPlan) => 
     plan.type === 'Topic Assessment' || 
-    plan.details.some(d => d.toLowerCase().includes('assessment'));
+    plan.details.some(d => {
+      const text = typeof d === 'string' ? d : d.text;
+      return text.toLowerCase().includes('assessment');
+    });
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -258,9 +283,11 @@ const TimelineSection: React.FC = () => {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      const oldIndex = parseInt(active.id as string);
-      const newIndex = parseInt(over.id as string);
-      const newDetails = arrayMove(currentItem.details, oldIndex, newIndex);
+      const details = currentItem.details as DetailItem[];
+      const oldIndex = details.findIndex(d => d.id === active.id);
+      const newIndex = details.findIndex(d => d.id === over.id);
+      
+      const newDetails = arrayMove(details, oldIndex, newIndex);
       updateCurrentItem({ details: newDetails });
     }
   };
@@ -443,16 +470,16 @@ const TimelineSection: React.FC = () => {
                     onDragEnd={handleDragEnd}
                   >
                     <SortableContext 
-                      items={currentItem.details.map((_, i) => i.toString())}
+                      items={(currentItem.details as DetailItem[]).map(d => d.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      {currentItem.details.map((detail, dIdx) => {
-                        const isSubAssess = detail.toLowerCase().includes('assessment');
+                      {(currentItem.details as DetailItem[]).map((detailObj, dIdx) => {
+                        const isSubAssess = detailObj.text.toLowerCase().includes('assessment');
                         return (
                           <SortableItem 
-                            key={dIdx}
-                            id={dIdx.toString()}
-                            detail={detail}
+                            key={detailObj.id}
+                            id={detailObj.id}
+                            detail={detailObj.text}
                             index={dIdx}
                             isEditing={isEditing}
                             isSubAssess={isSubAssess}
@@ -567,18 +594,18 @@ const SortableItem: React.FC<SortableItemProps> = ({
     <li 
       ref={setNodeRef} 
       style={style} 
-      className={`group flex items-start text-sm kalam font-bold transition-all p-1 rounded-lg ${
-        isSubAssess ? 'bg-orange-50 text-orange-900 border border-orange-100/50' : 'text-slate-700'
-      } ${isDragging ? 'z-50 opacity-50 scale-105 shadow-xl bg-indigo-50 border-indigo-200' : 'border-transparent'}`}
+      className={`group flex items-start transition-all p-1.5 rounded-xl border-2 ${
+        isSubAssess ? 'bg-orange-50/50 text-orange-950 border-orange-200' : 'text-slate-700 border-transparent'
+      } ${isDragging ? 'z-50 opacity-50 scale-[1.02] shadow-xl bg-indigo-50 border-indigo-200' : ''}`}
     >
       <div 
         {...attributes} 
         {...listeners}
-        className={`w-5 h-5 rounded flex items-center justify-center mr-3 mt-0.5 shrink-0 border ${
-          isEditing ? 'cursor-grab active:cursor-grabbing hover:bg-slate-200' : ''
+        className={`w-6 h-6 rounded-lg flex items-center justify-center mr-3 mt-0.5 shrink-0 border-2 transition-all ${
+          isEditing ? 'cursor-grab active:cursor-grabbing hover:bg-slate-200 hover:border-slate-300' : ''
         } ${isSubAssess ? 'bg-orange-500 border-orange-600 text-white' : 'bg-slate-100 border-slate-200'}`}
       >
-        <span className="text-[8px]">{index + 1}</span>
+        <span className="text-[10px] font-bold">{index + 1}</span>
       </div>
       {isEditing ? (
         <div className="flex-1 flex items-center space-x-2">
@@ -586,18 +613,20 @@ const SortableItem: React.FC<SortableItemProps> = ({
             type="text" 
             value={detail} 
             onChange={(e) => handleUpdateDetail(index, e.target.value)} 
-            className="flex-1 bg-transparent border-b border-slate-200 p-1 focus:outline-none focus:border-slate-900"
-            placeholder="Enter sub-topic..."
+            className="flex-1 bg-transparent border-b-2 border-slate-200 p-1 focus:outline-none focus:border-slate-900 font-medium text-sm transition-all"
+            placeholder="Type your sub-topic here..."
           />
           <button 
             onClick={() => handleRemoveDetail(index)} 
-            className="text-slate-300 hover:text-red-500 transition-colors"
+            className="p-1 text-slate-300 hover:text-red-500 transition-all hover:bg-red-50 rounded-lg"
           >
-            <Trash2 size={14}/>
+            <Trash2 size={16}/>
           </button>
         </div>
       ) : (
-        <span className="flex-1">{detail} {isSubAssess && '🔥'}</span>
+        <span className="flex-1 py-0.5 font-medium leading-relaxed">
+          {detail} {isSubAssess && '⚡'}
+        </span>
       )}
     </li>
   );
