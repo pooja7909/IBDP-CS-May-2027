@@ -13,7 +13,7 @@ const IntroSection: React.FC = () => {
       <div className="text-center relative py-12">
         <div className="tape"></div>
         <h1 className="text-6xl font-black handwritten text-slate-900 mb-4 drop-shadow-sm">A3.1 Database Fundamentals</h1>
-        <p className="text-2xl kalam text-slate-600 italic">"The War Against Redundancy"</p>
+        <p className="text-2xl font-bold text-slate-600 italic">"The War Against Redundancy"</p>
       </div>
 
       {/* A3.1.1: Features Infographic */}
@@ -41,7 +41,7 @@ const IntroSection: React.FC = () => {
         </div>
 
         <HandwrittenCard bgColor="bg-rose-50" className="border-4 border-rose-900 shadow-2xl">
-          <p className="kalam text-xl mb-10 font-bold text-slate-800 text-center leading-relaxed">
+          <p className="text-xl mb-10 font-bold text-slate-800 text-center leading-relaxed">
             "Flat files (CSVs/Excel) store everything in one big mess. <br/> This causes <span className="text-rose-600 underline">three fatal anomalies</span>:"
           </p>
           
@@ -88,7 +88,7 @@ const IntroSection: React.FC = () => {
         </HandwrittenCard>
 
         <HandwrittenCard title="Limitations & Realities" bgColor="bg-slate-900" className="text-white border-4 border-slate-700 shadow-2xl">
-           <p className="text-xs kalam italic text-slate-400 mb-6 leading-relaxed">
+           <p className="text-xs italic text-slate-400 mb-6 leading-relaxed">
              "Relational databases aren't perfect. As data grows to billions of rows, 'Joins' become extremely computationally expensive."
            </p>
            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl flex items-start space-x-4">
@@ -109,7 +109,7 @@ const FeatureBox = ({ icon: Icon, title, desc, color }: any) => (
       <Icon size={24}/>
     </div>
     <h4 className="font-black handwritten text-xl mb-2 text-slate-900">{title}</h4>
-    <p className="text-xs font-bold kalam text-slate-500 leading-relaxed italic">"{desc}"</p>
+    <p className="text-xs font-bold text-slate-500 leading-relaxed italic">"{desc}"</p>
   </div>
 );
 
@@ -117,7 +117,7 @@ const AnomalyVisual = ({ icon: Icon, title, desc, scenario, color }: any) => (
   <div className={`p-6 border-4 rounded-[2.5rem] sketch-border shadow-lg ${color} flex flex-col`}>
     <Icon className="text-rose-600 mb-4" size={32} />
     <h5 className="font-black text-lg handwritten text-slate-900 mb-2 uppercase">{title}</h5>
-    <p className="text-[11px] kalam font-bold text-slate-600 mb-4 leading-tight">{desc}</p>
+    <p className="text-[11px] font-bold text-slate-600 mb-4 leading-tight">{desc}</p>
     <div className="mt-auto pt-4 border-t border-slate-100">
        <span className="text-[9px] font-black uppercase text-rose-400 block mb-1">Scenario:</span>
        <p className="text-[10px] italic text-slate-400">{scenario}</p>
