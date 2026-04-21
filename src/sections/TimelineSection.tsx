@@ -46,7 +46,8 @@ interface MonthPlan {
 const normalizeDetails = (details: (string | DetailItem)[]): DetailItem[] => {
   return details.map((d, index) => {
     if (typeof d === 'string') {
-      return { id: `item-${index}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, text: d };
+      // Use a more stable ID base if it was just a string
+      return { id: `item-${index}-${d.substring(0, 5).replace(/\s/g, '')}`, text: d };
     }
     return d;
   });
@@ -355,7 +356,7 @@ const TimelineSection: React.FC = () => {
       <div className="text-center relative py-8">
         <div className="tape"></div>
         <h1 className="text-5xl md:text-6xl font-black handwritten text-slate-900 mb-2">Curriculum Journey</h1>
-        <p className="text-xl kalam text-slate-600 italic">"The 18-month roadmap to IBDP Success"</p>
+        <p className="text-xl font-bold text-slate-600 italic">"The 18-month roadmap to IBDP Success"</p>
         
         <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-6">
           <div className="inline-flex bg-slate-200 p-1 rounded-2xl sketch-border">
@@ -496,7 +497,7 @@ const TimelineSection: React.FC = () => {
               <div className="mt-auto pt-12 flex justify-between items-end border-t border-dashed border-slate-200">
                  <div className="text-[9px] font-mono text-slate-400 uppercase tracking-widest pb-6">Planner Ref: IBDP-CS-2027-{activeTrack}-V1</div>
                  <div className="bg-yellow-50 p-3 sketch-border -rotate-1 group cursor-pointer mb-6 hover:rotate-0 transition-transform">
-                    <p className="text-[10px] kalam font-black text-slate-600 flex items-center"><MessageSquareText size={12} className="mr-1 text-slate-400 group-hover:animate-bounce"/> Speak to Ms Arora</p>
+                     <p className="text-[10px] font-black text-slate-600 flex items-center"><MessageSquareText size={12} className="mr-1 text-slate-400 group-hover:animate-bounce"/> Speak to Ms Arora</p>
                  </div>
               </div>
             </HandwrittenCard>
@@ -507,7 +508,7 @@ const TimelineSection: React.FC = () => {
       <div className="grid lg:grid-cols-2 gap-10">
         <HandwrittenCard title="Track Overview" bgColor="bg-blue-50" className="border-blue-200">
            <div className="space-y-4">
-              <p className="kalam text-sm leading-relaxed">{activeTrack === 'SL' ? "Standard Level (SL) focus: Establishing core programming logic and mastering Theme A foundations." : "Higher Level (HL) focus: Extending the core with recursion, abstract data types, and advanced architectural design patterns."}</p>
+              <p className="text-sm leading-relaxed font-medium">{activeTrack === 'SL' ? "Standard Level (SL) focus: Establishing core programming logic and mastering Theme A foundations." : "Higher Level (HL) focus: Extending the core with recursion, abstract data types, and advanced architectural design patterns."}</p>
               <div className="grid grid-cols-2 gap-4">
                 <MiniSummary icon={Code} title="Track" desc={activeTrack === 'SL' ? "Core Core" : "Core + Depth"} color="text-blue-600" />
                 <MiniSummary icon={Database} title="Databases" desc={activeTrack === 'SL' ? "Relational Basics" : "ACID & SQL Aggs"} color="text-pink-600" />
@@ -519,7 +520,7 @@ const TimelineSection: React.FC = () => {
 
         <HandwrittenCard title="Yearly Goals" bgColor="bg-emerald-50" className="border-emerald-200">
            <div className="space-y-4">
-              <p className="kalam text-sm leading-relaxed">{activeYear === 'DP1' ? "Foundation Year: Focus on building a strong coding portfolio and understanding relational modeling." : "Final Year: Perfecting the IA solution and mastering the case study scenario for Paper 1."}</p>
+              <p className="text-sm leading-relaxed font-medium">{activeYear === 'DP1' ? "Foundation Year: Focus on building a strong coding portfolio and understanding relational modeling." : "Final Year: Perfecting the IA solution and mastering the case study scenario for Paper 1."}</p>
               <div className="grid grid-cols-2 gap-4">
                 <MiniSummary icon={Network} title="Topic" desc={activeYear === 'DP1' ? "Intro B1/B2" : "Theory A1/A2/A4"} color="text-emerald-600" />
                 <MiniSummary icon={BrainCircuit} title="Logic" desc={activeYear === 'DP1' ? "Computational thinking" : "Machine learning"} color="text-purple-600" />
@@ -533,7 +534,7 @@ const TimelineSection: React.FC = () => {
       <div className="bg-slate-900 text-white p-8 rounded-3xl sketch-border relative overflow-hidden flex flex-col md:flex-row items-center justify-between">
          <div className="flex-1 space-y-2 mb-6 md:mb-0">
             <h4 className="text-xl font-black handwritten text-yellow-400">Personalize Your {activeTrack} Track</h4>
-            <p className="text-sm kalam text-slate-400 italic">Adjust this timeline with Ms Arora. Highlights assessments automatically.</p>
+            <p className="text-sm font-bold text-slate-400 italic">Adjust this timeline with Ms Arora. Highlights assessments automatically.</p>
          </div>
          <div className="flex items-center space-x-4">
             <button onClick={toggleEditMode} className="bg-yellow-400 text-slate-900 px-6 py-2 rounded-full font-black text-xs hover:bg-yellow-300 transition-all shadow-lg flex items-center active:scale-95">
